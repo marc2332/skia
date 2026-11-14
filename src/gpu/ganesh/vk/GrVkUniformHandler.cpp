@@ -408,6 +408,13 @@ void GrVkUniformHandler::determineIfUsePushConstants() const {
     // We won't know that for sure until then but we need to make this determination now,
     // so assume we will need it.
     static constexpr uint32_t kPad = 2*sizeof(float);
+    // Uniform arrays can be indexed non-uniformly, which push constants do not support.
+    for (const VkUniformInfo& uniform : fUniforms.items()) {
+        if (uniform.fVariable.isArray()) {
+            fUsePushConstants = false;
+            return;
+        }
+    }
     fUsePushConstants =
             fCurrentOffsets[kStd430Layout] > 0 &&
             fCurrentOffsets[kStd430Layout] + kPad <= fProgramBuilder->caps()->maxPushConstantsSize();
